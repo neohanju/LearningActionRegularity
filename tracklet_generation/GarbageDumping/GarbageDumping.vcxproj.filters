@@ -4,29 +4,8 @@
     <ClCompile Include="haanju_utils.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="haanju_types.cpp" />
-    <ClCompile Include="ActionClassifier.cpp">
-      <Filter>Action Detection</Filter>
-    </ClCompile>
-    <ClCompile Include="ThrowDetector.cpp">
-      <Filter>Action Detection</Filter>
-    </ClCompile>
-    <ClCompile Include="ThrowDetectorSet.cpp">
-      <Filter>Action Detection</Filter>
-    </ClCompile>
     <ClCompile Include="MTTracker.cpp">
       <Filter>Tracking</Filter>
-    </ClCompile>
-    <ClCompile Include="BGModeling.cpp">
-      <Filter>Foreground Detectin</Filter>
-    </ClCompile>
-    <ClCompile Include="ResultIntegration.cpp">
-      <Filter>Integration</Filter>
-    </ClCompile>
-    <ClCompile Include="kcftracker.cpp">
-      <Filter>Tracking\KCF</Filter>
-    </ClCompile>
-    <ClCompile Include="fhog.cpp">
-      <Filter>Tracking\KCF</Filter>
     </ClCompile>
     <ClCompile Include="HungarianMethod.cpp">
       <Filter>Utils</Filter>
@@ -35,44 +14,8 @@
   <ItemGroup>
     <ClInclude Include="haanju_utils.hpp" />
     <ClInclude Include="haanju_types.hpp" />
-    <ClInclude Include="ActionClassifier.h">
-      <Filter>Action Detection</Filter>
-    </ClInclude>
-    <ClInclude Include="ThrowDetector.h">
-      <Filter>Action Detection</Filter>
-    </ClInclude>
-    <ClInclude Include="ThrowDetectorSet.h">
-      <Filter>Action Detection</Filter>
-    </ClInclude>
     <ClInclude Include="MTTracker.h">
       <Filter>Tracking</Filter>
-    </ClInclude>
-    <ClInclude Include="BGModeling.h">
-      <Filter>Foreground Detectin</Filter>
-    </ClInclude>
-    <ClInclude Include="ResultIntegration.h">
-      <Filter>Integration</Filter>
-    </ClInclude>
-    <ClInclude Include="ffttools.hpp">
-      <Filter>Tracking\KCF</Filter>
-    </ClInclude>
-    <ClInclude Include="kcftracker.hpp">
-      <Filter>Tracking\KCF</Filter>
-    </ClInclude>
-    <ClInclude Include="recttools.hpp">
-      <Filter>Tracking\KCF</Filter>
-    </ClInclude>
-    <ClInclude Include="tracker.h">
-      <Filter>Tracking\KCF</Filter>
-    </ClInclude>
-    <ClInclude Include="fhog.hpp">
-      <Filter>Tracking\KCF</Filter>
-    </ClInclude>
-    <ClInclude Include="labdata.hpp">
-      <Filter>Tracking\KCF</Filter>
-    </ClInclude>
-    <ClInclude Include="params.h">
-      <Filter>Foreground Detectin</Filter>
     </ClInclude>
     <ClInclude Include="HungarianMethod.h">
       <Filter>Utils</Filter>
@@ -81,18 +24,6 @@
   <ItemGroup>
     <Filter Include="Tracking">
       <UniqueIdentifier>{afd17a8b-b860-4c62-aa7d-b56cee3e14be}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Action Detection">
-      <UniqueIdentifier>{ec360b0d-6372-4335-aaef-fc23be93827f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Foreground Detectin">
-      <UniqueIdentifier>{11ca920d-076e-4307-84a1-de5c28e74fd3}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Integration">
-      <UniqueIdentifier>{a6df087b-2eaa-41e4-ba5d-2b342eaca1ed}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Tracking\KCF">
-      <UniqueIdentifier>{eb0624f7-dcee-4719-beba-a36a5b376f2c}</UniqueIdentifier>
     </Filter>
     <Filter Include="Utils">
       <UniqueIdentifier>{a6340265-8f7d-4407-83bf-0c912de21e69}</UniqueIdentifier>

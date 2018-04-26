@@ -148,36 +148,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="ActionClassifier.cpp" />
-    <ClCompile Include="BGModeling.cpp" />
-    <ClCompile Include="fhog.cpp" />
     <ClCompile Include="haanju_types.cpp" />
     <ClCompile Include="haanju_utils.cpp" />
     <ClCompile Include="HungarianMethod.cpp" />
-    <ClCompile Include="kcftracker.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MTTracker.cpp" />
-    <ClCompile Include="ResultIntegration.cpp" />
-    <ClCompile Include="ThrowDetector.cpp" />
-    <ClCompile Include="ThrowDetectorSet.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ActionClassifier.h" />
-    <ClInclude Include="BGModeling.h" />
-    <ClInclude Include="ffttools.hpp" />
-    <ClInclude Include="fhog.hpp" />
     <ClInclude Include="haanju_types.hpp" />
     <ClInclude Include="haanju_utils.hpp" />
     <ClInclude Include="HungarianMethod.h" />
-    <ClInclude Include="kcftracker.hpp" />
-    <ClInclude Include="labdata.hpp" />
     <ClInclude Include="MTTracker.h" />
-    <ClInclude Include="params.h" />
-    <ClInclude Include="recttools.hpp" />
-    <ClInclude Include="ResultIntegration.h" />
-    <ClInclude Include="ThrowDetector.h" />
-    <ClInclude Include="ThrowDetectorSet.h" />
-    <ClInclude Include="tracker.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

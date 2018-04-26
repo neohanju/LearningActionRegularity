@@ -6,6 +6,8 @@
 #include "MTTracker.h"
 
 
+const double kKeypointMinConfidence = 0.1;
+
 namespace hj
 {
 
@@ -193,10 +195,12 @@ CTrackResult CMTTracker::Track(
 	matTrackingResult_ = _curFrame.clone();
 	//cv::cvtColor(_curFrame, matTrackingResult_, cv::COLOR_GRAY2BGR);
 	
-	UpdateTrajectories(vecKeypoints_, activeTrajectories_, inactiveTrajectories_);
+	// TODO: check
+	this->UpdateTrajectories(vecKeypoints_, activeTrajectories_, inactiveTrajectories_);
 
 	/* result packaging */
-	ResultPackaging();	
+	// TODO: check
+	this->ResultPackaging();	
 	trackingResult_.procTime = clock() - timeStartTrack;
 
 	/* visualize */
@@ -1098,14 +1102,46 @@ void CMTTracker::VisualizeResult()
 	cv::rectangle(matTrackingResult_, cv::Rect(5, 2, 100, 22), cv::Scalar(0, 0, 0), CV_FILLED);
 	cv::putText(matTrackingResult_, strFrameInfo, cv::Point(6, 20), cv::FONT_HERSHEY_SIMPLEX, 0.7, cv::Scalar(255, 255, 255));
 
-	/* detections */
+	/* keypoints */
 	for (int k = 0; k < vecKeypoints_.size(); k++)
 	{
-		cv::rectangle(
-			matTrackingResult_, 
-			hj::Rescale(vecKeypoints_[k].bbox, stParam_.dImageRescaleRecover),
+		CKeyPoints curKeypoints = vecKeypoints_[k];
+		cv::rectangle(matTrackingResult_, 
+			hj::Rescale(curKeypoints.bbox, stParam_.dImageRescaleRecover),
 			cv::Scalar(255, 255, 255), 
 			1);
+
+		// draw limbs
+		for (int lIdx = 0; lIdx < curKeypoints.limbs.size(); ++lIdx)
+		{
+			stKeyPoint firstPoint = curKeypoints.points[curKeypoints.limbs[lIdx].from];
+			stKeyPoint secondPoint = curKeypoints.points[curKeypoints.limbs[lIdx].to];
+			if (kKeypointMinConfidence > firstPoint.confidence || kKeypointMinConfidence > secondPoint.confidence)
+				continue;
+			cv::line(matTrackingResult_, firstPoint.cv(), secondPoint.cv(), vecColors_[10 * lIdx + 1], 4);
+		}
+
+		// draw keypoints
+		for (int pIdx = 0; pIdx < vecKeypoints_[k].points.size(); ++pIdx)
+		{
+			if (kKeypointMinConfidence > vecKeypoints_[k].points[pIdx].confidence)
+				continue;
+
+			cv::circle(matTrackingResult_,
+				vecKeypoints_[k].points[pIdx].cv(),
+				5,
+				cv::Scalar(0, 0, 255), -1);
+			//cv::rectangle(matTrackingResult_,
+			//	cv::Rect((int)vecKeypoints_[k].points[pIdx].x, (int)vecKeypoints_[k].points[pIdx].y - 10, 7 * 20, 14),
+			//	vecColors_[pIdx+1],
+			//	CV_FILLED);
+			//cv::putText(matTrackingResult_,
+			//	std::to_string(0),
+			//	vecKeypoints_[k].points[pIdx].cv(),
+			//	cv::FONT_HERSHEY_SIMPLEX,
+			//	0.3,
+			//	cv::Scalar(255, 255, 255));
+		}
 	}
 
 	/* tracklets */
@@ -1180,6 +1216,8 @@ void CMTTracker::VisualizeResult()
 			matTrackingResult_,
 			curTrajectory->headBoxes.back(),
 			cv::Scalar(0, 0, 255), 1);
+
+		// draw recent trajectory
 
 	}
 
@@ -1392,7 +1430,7 @@ void CMTTracker::UpdateTrajectories(
 	{
 		for (int pointIdx = 0, costPos = trajIdx;
 			pointIdx != _vecCurKeyPoints.size();
-			pointIdx++, costPos += _activeTrajectories.size())
+			++pointIdx, costPos += (int)_activeTrajectories.size())
 		{
 			double curCost = 0.0;
 
@@ -1481,7 +1519,7 @@ void CMTTracker::UpdateTrajectories(
 	{
 		for (int pointIdx = 0, costPos = trajIdx;
 			pointIdx != _vecCurKeyPoints.size();
-			pointIdx++, costPos += _inactiveTrajectories.size())
+			++pointIdx, costPos += (int)_inactiveTrajectories.size())
 		{
 			double curCost = 0.0;
 			// TODO: translation + depth distance

@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="haanju_utils.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="haanju_types.cpp" />
+    <ClCompile Include="SGSmoother.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="haanju_utils.hpp" />
+    <ClInclude Include="haanju_types.hpp" />
+    <ClInclude Include="SGSmoother.h" />
+  </ItemGroup>
+</Project>

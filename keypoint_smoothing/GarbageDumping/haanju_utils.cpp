@@ -293,28 +293,84 @@ bool hj::CheckOverlap(const hj::CKeyPoints _firstKeyPoints, const hj::CKeyPoints
 }
 
 #include "SGSmoother.h"
-const int kMaxTimeGap = 5;
+const int kMaxTimeGap = 10;
 const double kMinConfidence = 0.1;
+const bool bSmoothing[NUM_KEYPOINT_TYPES] = {
+	true,  // 0
+	true,  // 1
+	true,  // 2
+	false,
+	false,
+	true,  // 5
+	false,
+	false,
+	true,  // 8
+	false,
+	false,
+	true,  // 11
+	false,
+	false,
+	true,
+	true,
+	true,
+	true
+};
 
-hj::KeyPointsSet hj::RefineKeyPointTrajectories(const hj::KeyPointsSet _inputSet)
+bool distKeypointComparator(
+	const std::pair<double, hj::CKeyPoints> cmp1,
+	const std::pair<double, hj::CKeyPoints> cmp2)
+{
+	return cmp1.first < cmp2.first;
+}
+
+hj::KeyPointsSet hj::RefineKeyPointTrajectories(hj::KeyPointsSet _inputSet)
 {
 	if (0 == _inputSet.size())
 		return _inputSet;
-	KeyPointsSet processedResult;	
+	KeyPointsSet processedResult;
 
-	// fill time gap with dummy keypoints
+	// modify direction
+	for (int kpIdx = 1; kpIdx < _inputSet.size(); ++kpIdx)
+	{
+		CKeyPoints wholeFlip = _inputSet[kpIdx].flip(0),
+			upperFlip = _inputSet[kpIdx].flip(1), 
+			lowerFlip = _inputSet[kpIdx].flip(2);
+		
+		double origDist = _inputSet[kpIdx-1].distance(_inputSet[kpIdx]),
+			wholeFlipDist = _inputSet[kpIdx-1].distance(wholeFlip),
+			upperFlipDist = _inputSet[kpIdx-1].distance(upperFlip),
+			lowerFlipDist = _inputSet[kpIdx-1].distance(lowerFlip);
+
+		std::vector<std::pair<double, CKeyPoints>> flipedKeyPoints;
+		flipedKeyPoints.push_back(std::make_pair(origDist, _inputSet[kpIdx]));
+		flipedKeyPoints.push_back(std::make_pair(wholeFlipDist, wholeFlip));
+		flipedKeyPoints.push_back(std::make_pair(upperFlipDist, upperFlip));
+		flipedKeyPoints.push_back(std::make_pair(lowerFlipDist, lowerFlip));
+
+		// distance compare
+		std::sort(flipedKeyPoints.begin(), flipedKeyPoints.end(), distKeypointComparator);		
+		_inputSet[kpIdx] = flipedKeyPoints.front().second;
+	}
+
+	// fill time gap with dummy keypoints (when the gap is small enough)
 	CKeyPoints dummyKeyPoints;
 	dummyKeyPoints.fillZeroPoints();
 	dummyKeyPoints.id = _inputSet[0].id;
+	dummyKeyPoints.isSuspect = _inputSet[0].isSuspect;
+	dummyKeyPoints.isThrowingGarbage = false;
 	processedResult.push_back(_inputSet[0]);
 	for (int kpIdx = 1; kpIdx < _inputSet.size(); ++kpIdx)
 	{
 		// fill with dummy keypoints
-		for (int i = _inputSet[kpIdx - 1].frameIndex + 1; i < _inputSet[kpIdx].frameIndex; ++i)
+		if (kMaxTimeGap >= _inputSet[kpIdx].frameIndex - _inputSet[kpIdx - 1].frameIndex - 1)
 		{
-			dummyKeyPoints.frameIndex = i;
-			processedResult.push_back(dummyKeyPoints);
-		}			
+			dummyKeyPoints.isThrowingGarbage = _inputSet[kpIdx].isThrowingGarbage && _inputSet[kpIdx - 1].isThrowingGarbage;
+			for (int i = _inputSet[kpIdx - 1].frameIndex + 1; i < _inputSet[kpIdx].frameIndex; ++i)
+			{
+				dummyKeyPoints.frameIndex = i;
+				processedResult.push_back(dummyKeyPoints);
+			}
+		}
 
 		// insert original keypoints
 		processedResult.push_back(_inputSet[kpIdx]);
@@ -337,17 +393,19 @@ hj::KeyPointsSet hj::RefineKeyPointTrajectories(const hj::KeyPointsSet _inputSet
 				{
 					// boundary condition (cannot interpolate, because their is not lefthand side value
 				}
-				else if (0 < procStart && kMaxTimeGap >= kpIdx - procStart + 1)
+				else if (0 < procStart && kMaxTimeGap >= processedResult[kpIdx].frameIndex - processedResult[procStart].frameIndex - 1)
 				{
 					// do interpolation
 					hj::stKeyPoint prevPoint = processedResult[procStart-1].points[pIdx];
 					hj::stKeyPoint currPoint = processedResult[kpIdx].points[pIdx];
+					int prevFrameIdx = processedResult[procStart - 1].frameIndex;
+					int currFrameIdx = processedResult[kpIdx].frameIndex;
 
-					double denomInv = 1.0 / (double)(kpIdx - procStart + 1);
+					double denomInv = 1.0 / (double)(currFrameIdx - prevFrameIdx + 1);
 					for (int procKpIdx = procStart; procKpIdx < kpIdx; ++procKpIdx)
 					{
-						double frontCoef = (double)(kpIdx - procKpIdx);
-						double backCoef = (double)(procKpIdx - procStart + 1);
+						double frontCoef = (double)(currFrameIdx - processedResult[procKpIdx].frameIndex);
+						double backCoef = (double)(processedResult[procKpIdx].frameIndex - prevFrameIdx + 1);
 						processedResult[procKpIdx].points[pIdx].x = denomInv * (frontCoef * prevPoint.x + backCoef * currPoint.x);
 						processedResult[procKpIdx].points[pIdx].y = denomInv * (frontCoef * prevPoint.y + backCoef * currPoint.y);
 						processedResult[procKpIdx].points[pIdx].confidence = kMinConfidence;
@@ -361,12 +419,16 @@ hj::KeyPointsSet hj::RefineKeyPointTrajectories(const hj::KeyPointsSet _inputSet
 	// smoothing
 	for (int pIdx = 0; pIdx < NUM_KEYPOINT_TYPES; ++pIdx)
 	{
+		if (!bSmoothing[pIdx])
+			continue;
+
 		std::vector<double> xs, ys;
 		int startKpIdx = -1;
 		for (int kpIdx = 0; kpIdx < processedResult.size(); ++kpIdx)
 		{
-			if (kMinConfidence > processedResult[kpIdx].points[pIdx].confidence 
-				|| processedResult.size() - 1 == kpIdx)
+			if (kMinConfidence > processedResult[kpIdx].points[pIdx].confidence // zero point
+				|| (kpIdx > 0 && processedResult[kpIdx].frameIndex != processedResult[kpIdx - 1].frameIndex + 1)   // temporal discontinuity
+				|| processedResult.size() - 1 == kpIdx)  // boundary condition
 			{				
 				if (0 > startKpIdx)
 					continue;
@@ -374,7 +436,7 @@ hj::KeyPointsSet hj::RefineKeyPointTrajectories(const hj::KeyPointsSet _inputSet
 				// do smoothing and replacing points with smoothed points
 				CSGSmoother smootherX, smootherY;
 				smootherX.Insert(xs);
-				smootherY.Insert(ys);					
+				smootherY.Insert(ys);
 				for (int i = 0, procKpIdx = startKpIdx; i < smootherX.size(); ++i, ++procKpIdx)
 				{
 					processedResult[procKpIdx].points[pIdx].x = smootherX.GetResult(i);

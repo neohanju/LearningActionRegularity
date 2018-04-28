@@ -71,6 +71,18 @@ public:
 		limbs.push_back(stLimb(12, 13));
 		limbs.push_back(stLimb(14, 16));
 		limbs.push_back(stLimb(15, 17));
+
+		// upper swap
+		swapUpper.push_back(std::make_pair(16, 17));
+		swapUpper.push_back(std::make_pair(14, 15));
+		swapUpper.push_back(std::make_pair(2, 5));
+		swapUpper.push_back(std::make_pair(3, 6));
+		swapUpper.push_back(std::make_pair(4, 7));
+
+		// lower swap
+		swapLower.push_back(std::make_pair(8, 11));
+		swapLower.push_back(std::make_pair(9, 12));
+		swapLower.push_back(std::make_pair(10, 13));
 	}
 	CKeyPoints(const CKeyPoints &_det) { *this = _det; }
 	~CKeyPoints() {}
@@ -99,6 +111,50 @@ public:
 			bboxHeight * (1.0 * 2.0 * bboxMargin));
 		this->confidence /= (double)this->points.size();
 	}
+
+	CKeyPoints flip(int type = 0)  // type: 0 -> whole body, 1 -> upper body, 2 -> lower body
+	{
+		CKeyPoints flippedKeyPoints(*this);
+		
+		if (0 == type || 1 == type)
+		{
+			// flip upper body
+			for (int i = 0; i < swapUpper.size(); ++i)
+			{
+				stKeyPoint temp = flippedKeyPoints.points[swapUpper[i].first];
+				flippedKeyPoints.points[swapUpper[i].first] = flippedKeyPoints.points[swapUpper[i].second];
+				flippedKeyPoints.points[swapUpper[i].second] = temp;
+			}
+		}
+
+		if (0 == type || 2 == type)
+		{
+			// flip lower body
+			for (int i = 0; i < swapLower.size(); ++i)
+			{
+				stKeyPoint temp = flippedKeyPoints.points[swapLower[i].first];
+				flippedKeyPoints.points[swapLower[i].first] = flippedKeyPoints.points[swapLower[i].second];
+				flippedKeyPoints.points[swapLower[i].second] = temp;
+			}
+		}
+
+		return flippedKeyPoints;
+	}
+
+	double distance(const CKeyPoints &_compare)
+	{
+		int numValidPoints = 0;
+		double res_distance = 0.0;
+		for (int i = 0; i < this->points.size(); ++i)
+		{
+			if (0.0 == this->points[i].confidence || 0.0 == _compare.points[i].confidence)
+				continue;
+			numValidPoints++;
+			res_distance += (this->points[i] - _compare.points[i]).normL2();
+		}
+		return res_distance / (double)numValidPoints;
+	}
+
 	CKeyPoints resize(double scale_) 
 	{
 		CKeyPoints resizedKeyPoints(*this);
@@ -131,6 +187,8 @@ public:
 	double confidence;
 	// int nFrame; // Action recognition Related (Temporary implementation)
 	// int jsonId; // Action recognition Related (Temporary implementation)
+private:
+	std::vector<std::pair<int, int>> swapUpper, swapLower;
 };
 typedef std::vector<CKeyPoints> KeyPointsSet;
 

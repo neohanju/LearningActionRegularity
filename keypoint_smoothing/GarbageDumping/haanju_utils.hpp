@@ -215,7 +215,7 @@ double KeyPointsDistance(
 
 bool CheckOverlap(const CKeyPoints _firstKeyPoints, const CKeyPoints _secondKeyPoints);
 
-KeyPointsSet RefineKeyPointTrajectories(const KeyPointsSet _inputSet);
+KeyPointsSet RefineKeyPointTrajectories(KeyPointsSet _inputSet);
 
 }
 

@@ -89,6 +89,7 @@
 int main(int argc, char** argv)
 {	
 	for (int vIdx = 1; vIdx <= 219; ++vIdx)
+	//for (int vIdx = 41; vIdx <= 41; ++vIdx)
 	{
 		char strKeypointsFileName[128];
 		sprintf_s(strKeypointsFileName, "%06d.txt", vIdx);		
@@ -96,6 +97,8 @@ int main(int argc, char** argv)
 		// read keypoints
 		std::string strKeypointsFilePath = std::string(KEYPOINTS_BASE_PATH) + "\\" + std::string(strKeypointsFileName);
 		std::vector<hj::KeyPointsSet> vecKeyPointsSet = hj::ReadKeypoints(strKeypointsFilePath);
+		if (0 == vecKeyPointsSet.size())
+			continue;
 
 		// refine keypoints
 		printf("processing %s\n", strKeypointsFileName);

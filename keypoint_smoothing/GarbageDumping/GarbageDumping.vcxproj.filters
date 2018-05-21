@@ -10,5 +10,6 @@
     <ClInclude Include="haanju_utils.hpp" />
     <ClInclude Include="haanju_types.hpp" />
     <ClInclude Include="SGSmoother.h" />
+    <ClInclude Include="dirent.h" />
   </ItemGroup>
 </Project>

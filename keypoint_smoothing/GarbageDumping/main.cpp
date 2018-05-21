@@ -80,14 +80,41 @@
 #include "opencv2/opencv.hpp"
 #include "opencv2/highgui/highgui.hpp"
 #include "haanju_utils.hpp"
+#include "dirent.h"
 
 
 #define KEYPOINTS_BASE_PATH ("keypoints")
 #define RESULT_PATH ("keypoints\\processed")
-
+const std::string kExtension("txt");
 
 int main(int argc, char** argv)
 {	
+	DIR *dir;
+	struct dirent *ent;
+
+	std::vector<std::string> vecTrajectoryFileNames;
+	if ((dir = opendir(KEYPOINTS_BASE_PATH)) != NULL) 
+	{
+		/* print all the files and directories within directory */
+		while ((ent = readdir(dir)) != NULL) 
+		{
+			if (ent->d_type != DT_REG)
+				continue;
+			// if entry is a regular file
+			std::string fname = ent->d_name;	// filename												
+			if (fname.find(kExtension, (fname.length() - kExtension.length())) != std::string::npos)
+				vecTrajectoryFileNames.push_back(fname);		// add filename to results vector
+		}
+		closedir(dir);
+	}
+	else {
+		/* could not open directory */
+		perror("");
+		return EXIT_FAILURE;
+	}
+
+
+
 	for (int vIdx = 1; vIdx <= 219; ++vIdx)
 	//for (int vIdx = 41; vIdx <= 41; ++vIdx)
 	{
